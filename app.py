@@ -1,5 +1,7 @@
 
 block_chain = []
+open_transaction = []
+owner = 'Maciej'
 
 
 def get_last_block_chain_value():
@@ -8,15 +10,23 @@ def get_last_block_chain_value():
     return block_chain[-1]
 
 
-def add_transaction(transaction_amount, last_transaction=[1]):
-    if last_transaction is None:
-        last_transaction = [1]
-    block_chain.append([last_transaction, transaction_amount])
+def add_transaction(recipient: str, sender: str = owner, amount: float = 1.0):
+    transaction = {
+        'sender': sender,
+        'recipient': recipient,
+        'amount': amount,
+    }
+    open_transaction.append(transaction)
 
 
-def get_transaction_value():
-    user_input = float(input('Your transaction amount please: '))
-    return user_input
+def mine_block():
+    pass
+
+
+def get_transaction_value() -> tuple:
+    tx_recipient = str(input('Enter the recipient of the transaction: '))
+    tx_amount = float(input('Your transaction amount please: '))
+    return tx_recipient, tx_amount
 
 
 def get_user_choice():
@@ -30,6 +40,7 @@ def print_blockchain_elements():
         print(block)
     else:
         print(20 * '-')
+
 
 def verify_chain():
     is_valid = True
@@ -57,7 +68,10 @@ while waiting_for_input:
     user_choice = get_user_choice()
 
     if user_choice == '1':
-        add_transaction(get_transaction_value(), get_last_block_chain_value())
+        tx_data = get_transaction_value()
+        recipient, amount = tx_data
+        add_transaction(recipient, amount=amount)
+        print(open_transaction)
     elif user_choice == '2':
         print_blockchain_elements()
     elif user_choice == 'h':
