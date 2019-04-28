@@ -1,4 +1,7 @@
-import functools
+from functools import reduce
+from hashlib import sha256
+import json
+from collections import OrderedDict
 
 MINING_REWARD = 10
 
@@ -6,6 +9,7 @@ genesis_block = {
     'previous_hash': '',
     'index': 0,
     'transactions': [],
+    'proof': 100,
 }
 block_chain = [genesis_block]
 open_transactions = []
@@ -14,7 +18,23 @@ participants = {'Maciej'}
 
 
 def hash_block(block) -> str:
-    return '-'.join([str(block[key]) for key in block])
+    return sha256(json.dumps(block, sort_keys=True).encode()).hexdigest()
+
+
+def valid_proof(transactions: list, last_has: str, proof) -> bool:
+    guess = (str(transactions) + str(last_has) + str(proof)).encode()
+    guess_hash = sha256(guess).hexdigest()
+    return guess_hash[0:2] == '00'
+
+
+def proof_of_work() -> int:
+    last_hash = hash_block(block_chain[-1])
+    proof = 0
+    print('Proof of work...')
+    while not valid_proof(open_transactions, last_hash, proof):
+        proof += 1
+
+    return proof
 
 
 def get_balance(participant: str) -> float:
@@ -22,11 +42,11 @@ def get_balance(participant: str) -> float:
     open_tx_sender = [tx['amount'] for tx in open_transactions if tx['sender'] == participant]
     tx_sender.append(open_tx_sender)
 
-    amount_sent = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
+    amount_sent = reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender, 0)
 
     tx_recipient = [[tx['amount'] for tx in block['transactions'] if tx['recipient'] == participant] for block in
                     block_chain]
-    amount_received = functools.reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
+    amount_received = reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_recipient, 0)
 
     return float(amount_received - amount_sent)
 
@@ -42,11 +62,11 @@ def verify_transaction(transaction: dict) -> bool:
 
 
 def add_transaction(recipient: str, sender: str = owner, amount: float = 1.0):
-    transaction = {
-        'sender': sender,
-        'recipient': recipient,
-        'amount': amount,
-    }
+    transaction = OrderedDict([
+        ('sender', sender),
+        ('recipient', recipient),
+        ('amount', amount),
+    ])
     if verify_transaction(transaction):
         open_transactions.append(transaction)
         participants.add(sender)
@@ -57,17 +77,18 @@ def add_transaction(recipient: str, sender: str = owner, amount: float = 1.0):
 
 def mine_block() -> bool:
     last_block = block_chain[-1]
-    reward_transaction = {
-        'sender': 'MINING',
-        'recipient': owner,
-        'amount': MINING_REWARD
-    }
+    reward_transaction = OrderedDict([
+        ('sender', 'MINING'),
+        ('recipient', owner),
+        ('amount',  MINING_REWARD),
+    ])
     copied_transactions = open_transactions[:]
     copied_transactions.append(reward_transaction)
     block_chain.append({
         'previous_hash': hash_block(last_block),
         'index': len(block_chain),
         'transactions': copied_transactions,
+        'proof': proof_of_work(),
     })
     return True
 
@@ -96,6 +117,9 @@ def verify_chain():
         if index == 0:
             continue
         if block['previous_hash'] != hash_block(block_chain[index - 1]):
+            return False
+        if not valid_proof(block['transactions'][:-1], block['previous_hash'], block['proof']):
+            print('Proof of work is invalid!')
             return False
     return True
 
