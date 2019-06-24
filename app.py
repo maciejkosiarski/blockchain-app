@@ -13,7 +13,6 @@ block_chain = []
 open_transactions = []
 block_chain_source = 'blockchain.txt'
 owner = 'Maciej'
-participants = {'Maciej'}
 
 
 def load_data():
@@ -96,7 +95,7 @@ def get_balance(participant: str) -> float:
     open_tx_sender = [tx.amount for tx in open_transactions
                       if tx.sender == participant]
     tx_sender.append(open_tx_sender)
-    print(tx_sender)
+
     amount_sent = reduce(lambda tx_sum, tx_amt: tx_sum + sum(tx_amt) if len(tx_amt) > 0 else tx_sum + 0, tx_sender,
                          0)
 
@@ -151,7 +150,7 @@ def get_user_choice():
 def print_blockchain_elements():
     for block in block_chain:
         print('Outputting Block')
-        dump(block)
+        print(block)
     else:
         print(20 * '-')
 
@@ -179,8 +178,7 @@ while waiting_for_input:
     print('1: Add new transaction value')
     print('2: Mine a new block')
     print('3: Output the blockchains blocks')
-    print('4: Output all participants')
-    print('5: Check transaction validity')
+    print('4: Check transaction validity')
     print('q: Quit')
 
     user_choice = get_user_choice()
@@ -200,8 +198,6 @@ while waiting_for_input:
     elif user_choice == '3':
         print_blockchain_elements()
     elif user_choice == '4':
-        print(participants)
-    elif user_choice == '5':
         if verify_transactions():
             print('All transaction is valid!')
         else:
