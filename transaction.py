@@ -1,7 +1,9 @@
 from collections import OrderedDict
 
+from printable import Printable
 
-class Transaction:
+
+class Transaction(Printable):
     def __init__(self, sender: str, recipient: str, amount: float):
         self.sender = sender
         self.recipient = recipient
