@@ -1,6 +1,7 @@
 """Provides verification helper methods"""
 
 from transaction import Transaction
+from wallet import Wallet
 from utils.hash_util import hash_string_256, hash_block
 
 
@@ -24,9 +25,12 @@ class Verification:
         return True
 
     @staticmethod
-    def verify_transaction(transaction: Transaction, get_balance) -> bool:
-        return get_balance() >= transaction.amount
+    def verify_transaction(transaction: Transaction, get_balance, check_funds=True) -> bool:
+        if check_funds:
+            return get_balance() >= transaction.amount and Wallet.verify_transaction(transaction)
+        else:
+            return Wallet.verify_transaction(transaction)
 
     @classmethod
     def verify_transactions(cls, open_transactions, get_balance):
-        return all([cls.verify_transaction(tx, get_balance) for tx in open_transactions])
+        return all([cls.verify_transaction(tx, get_balance, False) for tx in open_transactions])
