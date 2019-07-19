@@ -3,9 +3,10 @@ import json
 # import pickle
 # from dumper import dump
 
-from utils.hash_util import hash_block
 from block import Block
 from transaction import Transaction
+
+from utils.hash_util import hash_block
 from utils.verification import Verification
 
 MINING_REWARD = 10
