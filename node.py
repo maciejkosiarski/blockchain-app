@@ -65,5 +65,6 @@ class Node:
             print('User left!')
 
 
-node = Node()
-node.listen_to_input()
+if __name__ == '__main__':
+    node = Node()
+    node.listen_to_input()
