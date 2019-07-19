@@ -1,3 +1,5 @@
+"""Provides verification helper methods"""
+
 from transaction import Transaction
 from utils.hash_util import hash_string_256, hash_block
 
