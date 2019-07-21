@@ -17,24 +17,28 @@ class Wallet:
         self.private_key = private_key
         self.public_key = public_key
 
-    def save_keys(self):
+    def save_keys(self) -> bool:
         if self.public_key is not None and self.private_key is not None:
             try:
                 with open('wallet.txt', mode='w') as f:
                     f.write(self.public_key)
                     f.write('\n')
                     f.write(self.private_key)
+                    return True
             except (IOError, IndexError):
                 print('Saving wallet error!')
+                return False
 
-    def load_keys(self):
+    def load_keys(self) -> bool:
         try:
             with open('wallet.txt', mode='r') as f:
                 keys = f.readlines()
                 self.public_key = keys[0][:-1]
                 self.private_key = keys[1]
+                return True
         except (IOError, IndexError):
             print('Loading wallet error!')
+            return False
 
     @staticmethod
     def generate_keys() -> tuple:
