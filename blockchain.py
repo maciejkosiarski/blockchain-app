@@ -161,4 +161,4 @@ class Blockchain:
         self.save_data()
 
     def get_peer_nodes(self):
-        return self.__peer_nodes[:]
+        return list(self.__peer_nodes)

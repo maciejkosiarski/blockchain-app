@@ -117,6 +117,20 @@ def get_chain():
     return jsonify(dict_chain), 200
 
 
+@app.route('/node', methods=['POST'])
+def add_node():
+    values = request.get_json()
+    if not values:
+        return jsonify({'message': 'No data attached'}), 400
+
+    if 'node' not in values:
+        return jsonify({'message': 'No data attached'}), 400
+
+    node = values.get('node')
+    blockchain.add_peer_node(node)
+    return jsonify({'message': 'Node added successfully.', 'all_nodes': blockchain.get_peer_nodes()}), 200
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
 
