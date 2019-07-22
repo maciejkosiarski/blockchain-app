@@ -101,6 +101,11 @@ def mine():
         return jsonify({'message': 'Adding a block failed.', 'wallet_set_up': wallet.public_key is not None}), 500
 
 
+@app.route('/transaction', methods=['GET'])
+def get_open_transaction():
+    return jsonify([tx.__dict__ for tx in blockchain.get_open_transactions()]), 200
+
+
 @app.route('/chain', methods=['GET'])
 def get_chain():
     chain_snapshot = blockchain.chain
