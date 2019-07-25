@@ -53,7 +53,12 @@ def get_balance():
         return jsonify({'message': 'Loading balance failed.','wallet_set_up': wallet.public_key is not None}), 500
 
 
-@app.route('/transaction', methods=['POST'])
+@app.route('/transactions', methods=['GET'])
+def get_open_transaction():
+    return jsonify([tx.__dict__ for tx in blockchain.get_open_transactions()]), 200
+
+
+@app.route('/transactions', methods=['POST'])
 def add_transaction():
     if wallet.public_key is None:
         return jsonify({'message': 'No wallet set up.'}), 400
@@ -101,11 +106,6 @@ def mine():
         return jsonify({'message': 'Adding a block failed.', 'wallet_set_up': wallet.public_key is not None}), 500
 
 
-@app.route('/transaction', methods=['GET'])
-def get_open_transaction():
-    return jsonify([tx.__dict__ for tx in blockchain.get_open_transactions()]), 200
-
-
 @app.route('/chain', methods=['GET'])
 def get_chain():
     chain_snapshot = blockchain.chain
@@ -117,7 +117,7 @@ def get_chain():
     return jsonify(dict_chain), 200
 
 
-@app.route('/node', methods=['POST'])
+@app.route('/nodes', methods=['POST'])
 def add_node():
     values = request.get_json()
     if not values:
@@ -131,7 +131,7 @@ def add_node():
     return jsonify({'message': 'Node added successfully.', 'all_nodes': blockchain.get_peer_nodes()}), 200
 
 
-@app.route('/node/<node_url>', methods=['DELETE'])
+@app.route('/nodes/<node_url>', methods=['DELETE'])
 def remove_node(node_url):
     if node_url == '' or node_url is None:
         return jsonify({'message': 'No node found.'}), 400
@@ -140,6 +140,11 @@ def remove_node(node_url):
         'message': 'Node removed.',
         'all_nodes': blockchain.get_peer_nodes(),
     }), 200
+
+
+@app.route('/nodes', methods=['GET'])
+def get_nodes():
+    return jsonify({'nodes': blockchain.get_peer_nodes()})
 
 
 if __name__ == '__main__':
