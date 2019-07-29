@@ -42,7 +42,7 @@
                     <form @submit.prevent="onAddNode">
                         <div class="form-group">
                             <label for="node-url">Node URL</label>
-                            <input v-model="newNodeUrl" type="text" class="form-control" id="node-url" placeholder="http://localhost:5001">
+                            <input v-model="newNodeUrl" type="text" class="form-control" id="node-url" placeholder="localhost:5001">
                         </div>
                         <button :disabled="newNodeUrl.trim() === ''" type="submit" class="btn btn-primary">Add</button>
                     </form>
@@ -57,10 +57,10 @@
             <div class="row">
                 <div class="col">
                     <ul class="list-group">
-                        <button 
+                        <button
                             v-for="node in nodes"
-                            style="cursor: pointer;" 
-                            class="list-group-item list-group-item-action" 
+                            style="cursor: pointer;"
+                            class="list-group-item list-group-item-action"
                             @click="onRemoveNode(node)">
                             {{ node }} (click to delete)
                         </button>
@@ -76,21 +76,50 @@
         new Vue({
             el: '#app',
             data: {
-                nodes: [
-                    'localhost:5001',
-                    'localhost:5002',
-                ],
-                newNodeUrl: ''
+                nodes: [],
+                newNodeUrl: '',
+                error: null,
+                success: null,
             },
             methods: {
                 onAddNode: function() {
-                    // Add node as peer node to local node server
+                    var vm = this;
+                    axios.post('/nodes', {node: this.newNodeUrl})
+                        .then(function(response) {
+                            vm.success = 'Stored node successfully';
+                            vm.error = null;
+                            vm.nodes = response.data.all_nodes;
+                        })
+                        .catch(function(error) {
+                            vm.succcess = null;
+                            vm.error = error.response.data.message;
+                        });
                 },
                 onLoadNodes: function() {
-                    // Load all peer nodes of the local node server
+                    var vm = this;
+                    axios.get('/nodes')
+                        .then(function(response) {
+                            vm.success = 'Fetched nodes successfully';
+                            vm.error = null;
+                            vm.nodes = response.data.all_nodes;
+                        })
+                        .catch(function(error) {
+                            vm.succcess = null;
+                            vm.error = error.response.data.message;
+                        });
                 },
-                onRemoveNode: function() {
-                    // Remove node as a peer node
+                onRemoveNode: function(node_url) {
+                    var vm = this;
+                    axios.delete('/nodes/' + node_url)
+                        .then(function(response) {
+                            vm.success = 'Node successfully deleted';
+                            vm.error = null;
+                            vm.nodes = response.data.all_nodes;
+                        })
+                        .catch(function(error) {
+                            vm.succcess = null;
+                            vm.error = error.response.data.message;
+                        });
                 }
             }
         })
