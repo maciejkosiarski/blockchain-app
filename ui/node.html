@@ -281,7 +281,7 @@
                 onSendTx: function () {
                     var vm = this;
                     this.txLoading = true;
-                    axios.post('/transaction', {
+                    axios.post('/transactions', {
                         recipient: vm.outgoingTx.recipient,
                         amount: vm.outgoingTx.amount
                     }).then(function(response) {
@@ -325,7 +325,7 @@
                             })
                     } else {
                         vm.dataLoading = true;
-                        axios.get('/transaction')
+                        axios.get('/transactions')
                             .then(function(response) {
                                 vm.openTransactions = response.data;
                                 vm.dataLoading = false;
