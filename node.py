@@ -5,8 +5,6 @@ from wallet import Wallet
 from blockchain import Blockchain
 
 app = Flask(__name__)
-wallet = Wallet()
-blockchain = Blockchain(wallet.public_key)
 CORS(app)
 
 
@@ -25,7 +23,7 @@ def create_keys():
     wallet.create_keys()
     if wallet.save_keys():
         global blockchain
-        blockchain = Blockchain(wallet.public_key)
+        blockchain = Blockchain(wallet.public_key, port)
         return jsonify({
             'public_key': wallet.public_key,
             'private_key': wallet.private_key,
@@ -39,7 +37,7 @@ def create_keys():
 def load_keys():
     if wallet.load_keys():
         global blockchain
-        blockchain = Blockchain(wallet.public_key)
+        blockchain = Blockchain(wallet.public_key, port)
         return jsonify({
             'public_key': wallet.public_key,
             'private_key': wallet.private_key,
@@ -53,9 +51,9 @@ def load_keys():
 def get_balance():
     balance = blockchain.get_balance()
     if balance is not None:
-        return jsonify({'message': 'Fetched balance successfully.','funds': balance}), 200
+        return jsonify({'message': 'Fetched balance successfully.', 'funds': balance}), 200
     else:
-        return jsonify({'message': 'Loading balance failed.','wallet_set_up': wallet.public_key is not None}), 500
+        return jsonify({'message': 'Loading balance failed.', 'wallet_set_up': wallet.public_key is not None}), 500
 
 
 @app.route('/transactions', methods=['GET'])
@@ -153,5 +151,12 @@ def get_nodes():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    from argparse import ArgumentParser
+    parser = ArgumentParser()
+    parser.add_argument('-p', '--port', type=int, default=5000)
+    args = parser.parse_args()
+    port = args.port
+    wallet = Wallet(port)
+    blockchain = Blockchain(wallet.public_key, port)
+    app.run(host='0.0.0.0', port=port)
 
