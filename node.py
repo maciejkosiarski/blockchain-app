@@ -85,6 +85,25 @@ def broadcast_transaction():
         return jsonify({'message': 'Creating a transaction failed.'}), 500
 
 
+@app.route('/broadcast-block', methods=['POST'])
+def broadcast_block():
+    values = request.get_json()
+    if not values:
+        return jsonify({'message': 'No data found.'}), 400
+    if 'block' not in values:
+        return jsonify({'message': 'Some data is missing.'}), 400
+    block = values['block']
+    if block['index'] == blockchain.chain[-1].index + 1:
+        if blockchain.add_block(block):
+            return jsonify({'message': 'Block added'}), 201
+        else:
+            return jsonify({'message': 'Block seems invalid.'}), 500
+    elif block['index'] > blockchain.chain[-1].index:
+        pass
+    else:
+        return jsonify({'message': 'Blockchain seems to be shorter, block not added'}), 409
+
+
 @app.route('/transactions', methods=['POST'])
 def add_transaction():
     if wallet.public_key is None:
