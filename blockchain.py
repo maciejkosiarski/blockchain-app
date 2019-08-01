@@ -70,7 +70,8 @@ class Blockchain:
             with open('blockchain-{}.txt'.format(self.node_id), mode='w') as f:
                 saveable_chain = [block.__dict__ for block in
                                   [Block(block_el.index, block_el.previous_hash,
-                                         [tx.__dict__ for tx in block_el.transactions], block_el.proof, block_el.timestamp)
+                                         [tx.__dict__ for tx in block_el.transactions], block_el.proof,
+                                         block_el.timestamp)
                                    for
                                    block_el in self.__chain]]
                 f.write(json.dumps(saveable_chain))
@@ -125,7 +126,8 @@ class Blockchain:
             return None
         return self.__chain[-1]
 
-    def add_transaction(self, recipient: str, sender: str, signature: str, amount: float = 1.0, is_receiving=False) -> bool:
+    def add_transaction(self, recipient: str, sender: str, signature: str, amount: float = 1.0,
+                        is_receiving=False) -> bool:
         if self.public_key is None:
             return False
 
@@ -138,7 +140,8 @@ class Blockchain:
                 for node in self.__peer_nodes:
                     url = 'http://{}/broadcast-transaction'.format(node)
                     try:
-                        response = requests.post(url, json={'sender': sender,'recipient': recipient,'amount': amount,'signature': signature})
+                        response = requests.post(url, json={'sender': sender, 'recipient': recipient, 'amount': amount,
+                                                            'signature': signature})
                         if response.status_code == 400 or response.status_code == 500:
                             print('Transaction declined, needs resolving')
                             return False
@@ -166,6 +169,19 @@ class Blockchain:
         self.__open_transactions = []
         self.save_data()
         return block
+
+    def add_block(self, block):
+        transactions = [Transaction(tx['sender'], tx['recipient'], tx['signature'], tx['amount']) for tx in
+                        block['transactions']]
+        proof_is_valid = Verification.valid_proof(transactions, block['previous_hash'], block['proof'])
+        hashes_match = hash_block(self.chain[-1]) == block['previous_hash']
+        if not proof_is_valid or not hashes_match:
+            return False
+
+        self.__chain.append(
+            Block(block['index'], block['previous_hash'], transactions, block['proof'], block['timestamp']))
+        self.save_data()
+        return True
 
     def add_peer_node(self, node_url):
         self.__peer_nodes.add(node_url)
